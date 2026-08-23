@@ -1,14 +1,31 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useSession } from 'next-auth/react';
+import { redirect, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { useEffect } from 'react';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
 
-  if (status === "loading") {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!user) {
+        router.replace('/login');
+      } else if (user.role === 'MEMBER') {
+        router.replace('/welcome');
+      } else {
+        router.replace('/dashboard');
+      }
+    }
+  }, [user, isLoading, router]);
+
+  if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -16,7 +33,7 @@ export default function HomePage() {
     );
   }
 
-  if (!session) redirect("/signin");
+  if (!session) redirect('/login');
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">

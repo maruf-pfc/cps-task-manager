@@ -18,8 +18,8 @@ export const mainMenuItems = [
     url: 'contest-video-solutions',
     icon: Video,
   },
-  { title: 'Programming Contests', url: 'programming-contests', icon: Trophy },
   { title: 'Email Marketing', url: 'email-marketing', icon: Mail },
-  { title: 'Users', url: 'users', icon: Users },
   { title: 'Payments', url: 'payments', icon: CreditCard },
+  { title: 'Programming Contests', url: 'programming-contests', icon: Trophy },
+  { title: 'Users', url: 'users', icon: Users },
 ];

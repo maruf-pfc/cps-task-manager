@@ -5,16 +5,46 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'OpsBoard API',
+      title: 'CPS Task Manager API',
       version: '1.0.0',
-      description: 'API documentation for the OpsBoard Task Management System.',
+      description: 'Comprehensive API documentation for the CPS Task Management System.',
     },
+    servers: [
+      {
+        url: 'http://localhost:5000',
+        description: 'Local Development Server',
+      },
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
+        },
+      },
+      schemas: {
+        ValidationError: {
+          type: 'object',
+          properties: {
+            error: { type: 'string', example: 'Validation Error' },
+            details: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  field: { type: 'string', example: 'email' },
+                  message: { type: 'string', example: 'Invalid email address' },
+                },
+              },
+            },
+          },
+        },
+        ErrorResponse: {
+          type: 'object',
+          properties: {
+            error: { type: 'string', example: 'Resource not found or internal server error' },
+          },
         },
       },
     },
@@ -24,14 +54,14 @@ const options = {
       },
     ],
   },
-  apis: ['./routes/*.js'], // adjust path if needed
+  apis: ['./routes/*.js', './server/routes/*.js'],
 };
 
 const swaggerSpec = swaggerJSDoc(options);
 
 const swaggerDocs = (app) => {
   app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  console.log('API docs available at /api/v1/api-docs');
+  console.log('API documentation running at http://localhost:5000/api/v1/api-docs');
 };
 
 export default swaggerDocs;

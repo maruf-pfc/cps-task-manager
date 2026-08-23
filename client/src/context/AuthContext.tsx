@@ -1,0 +1,111 @@
+'use client';
+
+import { createContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import api from '@/lib/api';
+import { toast } from "sonner"
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role:
+    | 'ADMIN'
+    | 'MANAGER'
+    | 'MEMBER'
+    | 'TRAINER'
+    | 'Developer'
+    | 'Teaching Assistant';
+  phone?: string;
+  facebookUrl?: string;
+  profileImage?: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  login: (data: any) => Promise<void>;
+  register: (data: any) => Promise<void>;
+  logout: () => void;
+  isLoading: boolean;
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined,
+);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkUserLoggedIn = async () => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          const { data } = await api.get('/auth/me');
+          setUser({
+            ...data,
+            phone: data.phone,
+            facebookUrl: data.facebookUrl,
+            profileImage: data.profileImage,
+          });
+        } catch (error) {
+          localStorage.removeItem('authToken');
+          setUser(null);
+        }
+      }
+      setIsLoading(false);
+    };
+    checkUserLoggedIn();
+  }, []);
+
+  const login = async (data: any) => {
+    try {
+      const response = await api.post('/auth/login', data);
+      localStorage.setItem('authToken', response.data.token);
+      const { data: userData } = await api.get('/auth/me');
+      setUser({
+        ...userData,
+        phone: userData.phone,
+        facebookUrl: userData.facebookUrl,
+        profileImage: userData.profileImage,
+      });
+      toast('Login successfully!');
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast(error.response?.data?.error || 'Login failed.');
+    }
+  };
+
+  const register = async (data: any) => {
+    try {
+      const response = await api.post('/auth/register', data);
+      localStorage.setItem('authToken', response.data.token);
+      const { data: userData } = await api.get('/auth/me');
+      setUser({
+        ...userData,
+        phone: userData.phone,
+        facebookUrl: userData.facebookUrl,
+        profileImage: userData.profileImage,
+      });
+      toast('Register successfully!');
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast(error.response?.data?.error || 'Register failed.');
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('authToken');
+    setUser(null);
+    router.push('/login');
+    toast('Logged out.');
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};

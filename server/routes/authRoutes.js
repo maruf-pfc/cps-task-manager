@@ -5,6 +5,8 @@ import {
   getMe,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { validate } from '../middleware/validateMiddleware.js';
+import { registerSchema, loginSchema } from '../validations/authValidation.js';
 
 const router = express.Router();
 
@@ -12,15 +14,16 @@ const router = express.Router();
  * @swagger
  * tags:
  *   name: Auth
- *   description: User authentication
+ *   description: User authentication and identity management
  */
 
 /**
  * @swagger
- * /api/auth/register:
+ * /api/v1/auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Auth]
+ *     security: []
  *     requestBody:
  *       required: true
  *       content:
@@ -34,26 +37,30 @@ const router = express.Router();
  *             properties:
  *               name:
  *                 type: string
+ *                 example: John Doe
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: john@example.com
  *               password:
  *                 type: string
  *                 format: password
+ *                 example: secret123
  *     responses:
  *       201:
  *         description: User registered successfully
  *       400:
- *         description: Bad request
+ *         $ref: '#/components/schemas/ValidationError'
  */
-router.post('/register', registerUser);
+router.post('/register', validate(registerSchema), registerUser);
 
 /**
  * @swagger
- * /api/auth/login:
+ * /api/v1/auth/login:
  *   post:
- *     summary: Login a user
+ *     summary: Login user and obtain JWT token
  *     tags: [Auth]
+ *     security: []
  *     requestBody:
  *       required: true
  *       content:
@@ -67,28 +74,30 @@ router.post('/register', registerUser);
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: john@example.com
  *               password:
  *                 type: string
  *                 format: password
+ *                 example: secret123
  *     responses:
  *       200:
  *         description: Login successful, returns token
  *       401:
  *         description: Invalid credentials
  */
-router.post('/login', loginUser);
+router.post('/login', validate(loginSchema), loginUser);
 
 /**
  * @swagger
- * /api/auth/me:
+ * /api/v1/auth/me:
  *   get:
- *     summary: Get logged in user data
+ *     summary: Get current logged-in user profile
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: User data
+ *         description: User profile retrieved successfully
  *       401:
  *         description: Not authorized
  */
